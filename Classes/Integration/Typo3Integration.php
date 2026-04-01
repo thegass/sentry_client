@@ -37,7 +37,9 @@ final class Typo3Integration implements IntegrationInterface
     private function processEvent(Event $event): void
     {
         $request = $this->getServerRequest();
-        if (!Environment::isCli() && $request instanceof ServerRequestInterface) {
+        if (Environment::isCli()) {
+            $event->setTag('request_type', 'cli');
+        } elseif ($request instanceof ServerRequestInterface) {
             if (ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()) {
                 $event->setTag('request_type', 'frontend');
                 $this->setUrl($event, $request);
@@ -45,8 +47,6 @@ final class Typo3Integration implements IntegrationInterface
                 $event->setTag('request_type', 'backend');
                 $this->setUrl($event, $request);
             }
-        } elseif (Environment::isCli()) {
-            $event->setTag('request_type', 'cli');
         }
 
         $requestId = $_SERVER['X-REQUEST-ID'] ?? $_SERVER['HTTP_X_REQUEST_ID'] ?? false;
